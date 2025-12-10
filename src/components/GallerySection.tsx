@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -18,19 +18,30 @@ import midia5 from "@/assets/gallery/midia_5.jpg";
 import midia6 from "@/assets/gallery/midia_6.jpg";
 import midia7 from "@/assets/gallery/midia_7.jpg";
 
-const galleryImages = [
-  { src: midia1, alt: "Forro de gesso moderno em ambiente comercial" },
-  { src: midia2, alt: "Forro modular com iluminação embutida" },
-  { src: midia3, alt: "Instalação de divisórias drywall" },
-  { src: midia4, alt: "Trabalho de isolamento térmico com steel frame" },
-  { src: midia5, alt: "Obra em andamento com estrutura de gesso" },
-  { src: midia6, alt: "Instalação de forro de gesso em residência" },
-  { src: midia7, alt: "Fachada da empresa Globo Gesso" },
+type GalleryItem = {
+  src: string;
+  alt: string;
+  type: "image" | "video";
+};
+
+const galleryItems: GalleryItem[] = [
+  { src: midia1, alt: "Forro de gesso moderno em ambiente comercial", type: "image" },
+  { src: midia2, alt: "Forro modular com iluminação embutida", type: "image" },
+  { src: "/midia_6.mp4", alt: "Vídeo de instalação de gesso", type: "video" },
+  { src: midia3, alt: "Instalação de divisórias drywall", type: "image" },
+  { src: midia4, alt: "Trabalho de isolamento térmico com steel frame", type: "image" },
+  { src: "/midia_9.mp4", alt: "Vídeo de projeto em andamento", type: "video" },
+  { src: midia5, alt: "Obra em andamento com estrutura de gesso", type: "image" },
+  { src: midia6, alt: "Instalação de forro de gesso em residência", type: "image" },
+  { src: "/midia_11.mp4", alt: "Vídeo de acabamento de gesso", type: "video" },
+  { src: midia7, alt: "Fachada da empresa Globo Gesso", type: "image" },
 ];
 
 export function GallerySection() {
   const [api, setApi] = useState<CarouselApi>();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const scrollNext = useCallback(() => {
     if (api) {
@@ -41,12 +52,42 @@ export function GallerySection() {
   useEffect(() => {
     if (!api) return;
 
-    const interval = setInterval(() => {
-      scrollNext();
-    }, 3000);
+    const onSelect = () => {
+      setCurrentIndex(api.selectedScrollSnap());
+    };
 
-    return () => clearInterval(interval);
-  }, [api, scrollNext]);
+    api.on("select", onSelect);
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+
+    const currentItem = galleryItems[currentIndex];
+    
+    if (currentItem.type === "image") {
+      // For images, wait 3 seconds then advance
+      const timeout = setTimeout(() => {
+        scrollNext();
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+    // For videos, the onEnded handler will trigger scrollNext
+  }, [api, currentIndex, scrollNext]);
+
+  const handleVideoEnd = useCallback(() => {
+    scrollNext();
+  }, [scrollNext]);
+
+  const registerVideoRef = useCallback((index: number, el: HTMLVideoElement | null) => {
+    if (el) {
+      videoRefs.current.set(index, el);
+    } else {
+      videoRefs.current.delete(index);
+    }
+  }, []);
 
   return (
     <section id="galeria" className="py-20 lg:py-32 bg-background">
@@ -72,19 +113,31 @@ export function GallerySection() {
           className="w-full max-w-6xl mx-auto"
         >
           <CarouselContent>
-            {galleryImages.map((image, index) => (
+            {galleryItems.map((item, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-2">
                   <Card 
                     className="overflow-hidden cursor-pointer group border-border/50 hover:border-primary/30 transition-smooth"
-                    onClick={() => setSelectedImage(image.src)}
+                    onClick={() => setSelectedItem(item)}
                   >
                     <CardContent className="p-0 aspect-square relative">
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      {item.type === "image" ? (
+                        <img
+                          src={item.src}
+                          alt={item.alt}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <video
+                          ref={(el) => registerVideoRef(index, el)}
+                          src={item.src}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          autoPlay
+                          muted
+                          playsInline
+                          onEnded={handleVideoEnd}
+                        />
+                      )}
                       <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-smooth flex items-center justify-center">
                         <span className="text-primary-foreground opacity-0 group-hover:opacity-100 transition-smooth font-medium">
                           Clique para ampliar
@@ -100,15 +153,26 @@ export function GallerySection() {
           <CarouselNext className="hidden md:flex -right-12" />
         </Carousel>
 
-        {/* Dialog para imagem expandida */}
-        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        {/* Dialog para mídia expandida */}
+        <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
           <DialogContent className="max-w-4xl p-0 bg-transparent border-none">
-            {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Imagem ampliada do projeto"
-                className="w-full h-auto rounded-lg"
-              />
+            {selectedItem && (
+              selectedItem.type === "image" ? (
+                <img
+                  src={selectedItem.src}
+                  alt={selectedItem.alt}
+                  className="w-full h-auto rounded-lg"
+                />
+              ) : (
+                <video
+                  src={selectedItem.src}
+                  className="w-full h-auto rounded-lg"
+                  autoPlay
+                  muted
+                  playsInline
+                  controls={false}
+                />
+              )
             )}
           </DialogContent>
         </Dialog>
