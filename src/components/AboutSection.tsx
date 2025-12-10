@@ -1,4 +1,5 @@
 import { Target, Eye, Heart, CheckCircle } from "lucide-react";
+import { useScrollReveal } from "@/hooks/use-parallax";
 
 const values = [
   "Compromisso e excelência em produtos e serviços",
@@ -9,10 +10,19 @@ const values = [
 ];
 
 export function AboutSection() {
+  const [headerRef, headerVisible] = useScrollReveal();
+  const [historyRef, historyVisible] = useScrollReveal();
+  const [cardsRef, cardsVisible] = useScrollReveal();
+
   return (
-    <section id="sobre" className="py-20 lg:py-32 bg-background">
+    <section id="sobre" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div 
+          ref={headerRef}
+          className={`text-center mb-16 transition-all duration-700 ${
+            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
           <span className="text-accent font-semibold text-sm uppercase tracking-wider">
             Quem somos
           </span>
@@ -25,7 +35,12 @@ export function AboutSection() {
         </div>
 
         {/* História */}
-        <div className="max-w-4xl mx-auto mb-20">
+        <div 
+          ref={historyRef}
+          className={`max-w-4xl mx-auto mb-20 transition-all duration-700 delay-200 ${
+            historyVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
+          }`}
+        >
           <div className="bg-secondary/50 rounded-2xl p-8 md:p-12 shadow-soft">
             <h3 className="text-2xl font-bold text-foreground mb-6 font-heading">Nossa história</h3>
             <p className="text-muted-foreground text-lg leading-relaxed">
@@ -39,7 +54,12 @@ export function AboutSection() {
         </div>
 
         {/* Missão, Visão, Valores */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div 
+          ref={cardsRef}
+          className={`grid md:grid-cols-3 gap-8 mb-16 transition-all duration-700 delay-300 ${
+            cardsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
           <div className="group bg-card rounded-2xl p-8 shadow-soft hover:shadow-medium transition-smooth border border-border/50">
             <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-smooth">
               <Target className="w-7 h-7 text-primary" />

@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useParallax } from "@/hooks/use-parallax";
 
 export function HeroSection() {
+  const [parallaxRef, offset] = useParallax(0.4);
+
   const handleScrollToSection = (sectionId: string) => {
     const element = document.querySelector(sectionId);
     if (element) {
@@ -18,12 +21,16 @@ export function HeroSection() {
   return (
     <section
       id="inicio"
-      className="relative min-h-screen flex items-center justify-center pt-20"
+      ref={parallaxRef}
+      className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden"
     >
-      {/* Background Image */}
+      {/* Background Image with Parallax */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBg})` }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-100"
+        style={{ 
+          backgroundImage: `url(${heroBg})`,
+          transform: `translateY(${offset * 0.5}px) scale(1.1)`,
+        }}
       >
         <div className="absolute inset-0 bg-gradient-overlay" />
       </div>

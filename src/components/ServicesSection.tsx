@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Paintbrush, Hammer, Phone } from "lucide-react";
+import { useScrollReveal } from "@/hooks/use-parallax";
 
 const services = [
   {
@@ -20,11 +21,19 @@ const services = [
 ];
 
 export function ServicesSection() {
+  const [leftRef, leftVisible] = useScrollReveal();
+  const [rightRef, rightVisible] = useScrollReveal();
+
   return (
-    <section id="servicos" className="py-20 lg:py-32 bg-background">
+    <section id="servicos" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div>
+          <div 
+            ref={leftRef}
+            className={`transition-all duration-700 ${
+              leftVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
+            }`}
+          >
             <span className="text-accent font-semibold text-sm uppercase tracking-wider">
               Soluções completas
             </span>
@@ -44,7 +53,12 @@ export function ServicesSection() {
             </Button>
           </div>
 
-          <div className="space-y-6">
+          <div 
+            ref={rightRef}
+            className={`space-y-6 transition-all duration-700 delay-200 ${
+              rightVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
+            }`}
+          >
             {services.map((service, index) => (
               <div
                 key={index}

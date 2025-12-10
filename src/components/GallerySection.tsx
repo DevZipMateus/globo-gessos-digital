@@ -9,6 +9,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { useScrollReveal } from "@/hooks/use-parallax";
 
 import midia1 from "@/assets/gallery/midia_1.jpg";
 import midia2 from "@/assets/gallery/midia_2.jpg";
@@ -42,6 +43,8 @@ export function GallerySection() {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const [headerRef, headerVisible] = useScrollReveal();
+  const [carouselRef, carouselVisible] = useScrollReveal();
 
   const scrollNext = useCallback(() => {
     if (api) {
@@ -90,9 +93,14 @@ export function GallerySection() {
   }, []);
 
   return (
-    <section id="galeria" className="py-20 lg:py-32 bg-background">
+    <section id="galeria" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div 
+          ref={headerRef}
+          className={`text-center mb-16 transition-all duration-700 ${
+            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
           <span className="text-accent font-semibold text-sm uppercase tracking-wider">
             Nossos trabalhos
           </span>
@@ -104,7 +112,13 @@ export function GallerySection() {
           </p>
         </div>
 
-        <Carousel
+        <div
+          ref={carouselRef}
+          className={`transition-all duration-700 delay-200 ${
+            carouselVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          <Carousel
           setApi={setApi}
           opts={{
             align: "start",
@@ -152,6 +166,7 @@ export function GallerySection() {
           <CarouselPrevious className="hidden md:flex -left-12" />
           <CarouselNext className="hidden md:flex -right-12" />
         </Carousel>
+        </div>
 
         {/* Dialog para mídia expandida */}
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>

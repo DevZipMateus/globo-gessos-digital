@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin, Clock, Instagram, Globe } from "lucide-react";
+import { useScrollReveal } from "@/hooks/use-parallax";
 
 const contactInfo = [
   {
@@ -40,10 +41,18 @@ const socialLinks = [
 ];
 
 export function ContactSection() {
+  const [headerRef, headerVisible] = useScrollReveal();
+  const [cardRef, cardVisible] = useScrollReveal();
+
   return (
-    <section id="contato" className="py-20 lg:py-32 bg-secondary/30">
+    <section id="contato" className="py-20 lg:py-32 bg-secondary/30 overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div 
+          ref={headerRef}
+          className={`text-center mb-16 transition-all duration-700 ${
+            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
           <span className="text-accent font-semibold text-sm uppercase tracking-wider">
             Fale conosco
           </span>
@@ -55,7 +64,12 @@ export function ContactSection() {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div 
+          ref={cardRef}
+          className={`max-w-4xl mx-auto transition-all duration-700 delay-200 ${
+            cardVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
+        >
           <div className="bg-card rounded-2xl p-8 md:p-12 shadow-medium border border-border/50">
             <div className="grid md:grid-cols-2 gap-8">
               {/* Contact Info */}
